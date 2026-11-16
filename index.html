@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Ada kado untukmu – LUMI GIFT</title>
+  <meta name="description" content="Kado digital dari LUMI GIFT">
+  <meta name="theme-color" content="#C4A27C">
+  <link rel="icon" href="/assets/brand/logo.png">
+  <link rel="preload" href="/fonts/gloock-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/bricolage-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="is-closed">
+
+  <!-- ============ 1. Tutup kotak (layar pembuka) ============ -->
+  <section class="lid" id="lid" aria-label="Kotak kado">
+    <div class="lid__ribbon lid__ribbon--v" aria-hidden="true"></div>
+    <div class="lid__ribbon lid__ribbon--h" aria-hidden="true"></div>
+    <div class="lid__bow" aria-hidden="true"><span></span><span></span><i></i></div>
+
+    <div class="tag" id="tag">
+      <span class="tag__hole" aria-hidden="true"></span>
+      <p class="tag__to" id="tagTo">Ada kado untukmu</p>
+      <p class="tag__from" id="tagFrom">&nbsp;</p>
+      <button class="btn btn--open" id="openBtn" type="button" disabled>Buka kadonya</button>
+      <p class="tag__hint" id="tagHint">Nyalakan suara HP-mu, ada lagu di dalamnya.</p>
+    </div>
+  </section>
+
+  <!-- ============ 2. Isi kotak ============ -->
+  <main class="box" id="box" aria-live="polite" hidden>
+
+    <header class="hello">
+      <h1 class="hello__title" id="title"></h1>
+      <p class="hello__meta" id="meta"></p>
+    </header>
+
+    <section class="part part--photos" aria-labelledby="h-foto">
+      <h2 class="part__title" id="h-foto">Potongan kenangan</h2>
+      <p class="part__note">Ketuk foto untuk melihat lebih besar.</p>
+      <div class="prints" id="prints"></div>
+    </section>
+
+    <section class="part part--song" aria-labelledby="h-lagu">
+      <h2 class="part__title" id="h-lagu">Lagu untukmu</h2>
+      <article class="slip" id="slip">
+        <div class="slip__stub" aria-hidden="true">
+          <div class="disc" id="disc"><img src="/assets/brand/logo.png" alt=""></div>
+        </div>
+        <div class="slip__body">
+          <p class="slip__name" id="songTitle"></p>
+          <p class="slip__artist" id="songArtist"></p>
+          <p class="slip__note" id="songNote"></p>
+          <div class="player" id="player">
+            <button class="player__btn" id="playBtn" type="button" aria-label="Putar lagu">
+              <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"/></svg>
+              <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>
+            </button>
+            <div class="player__track">
+              <input class="player__seek" id="seek" type="range" min="0" max="100" step="0.1" value="0" aria-label="Posisi lagu">
+              <div class="player__time"><span id="tNow">0:00</span><span id="tDur">0:00</span></div>
+            </div>
+          </div>
+          <div class="embed" id="embed" hidden></div>
+        </div>
+      </article>
+    </section>
+
+    <section class="part part--letter" aria-labelledby="h-surat">
+      <h2 class="part__title" id="h-surat">Surat</h2>
+      <article class="letter" id="letter"></article>
+    </section>
+
+    <section class="part part--secret" aria-labelledby="h-rahasia">
+      <h2 class="part__title" id="h-rahasia">Satu pesan lagi</h2>
+      <div class="envelope" id="envelope">
+        <div class="envelope__card" id="secretCard">
+          <p id="secretText"></p>
+        </div>
+        <div class="envelope__back" aria-hidden="true"></div>
+        <div class="envelope__flap" aria-hidden="true"></div>
+        <button class="seal" id="sealBtn" type="button" aria-label="Buka segel dan baca pesan rahasia">
+          <img src="/assets/brand/logo.png" alt="">
+        </button>
+      </div>
+      <p class="part__note part__note--center" id="sealHint">Tekan segelnya untuk membuka.</p>
+    </section>
+
+    <footer class="foot">
+      <img src="/assets/brand/logo.png" alt="LUMI GIFT" width="72" height="72">
+      <p>Kado ini dirangkai oleh LUMI GIFT, Jambi.</p>
+      <a class="foot__link" id="orderLink" href="#" target="_blank" rel="noopener" hidden>Pesan kado seperti ini</a>
+    </footer>
+  </main>
+
+  <!-- Pesan bila data tidak ditemukan -->
+  <section class="missing" id="missing" hidden>
+    <img src="/assets/brand/logo.png" alt="LUMI GIFT" width="120" height="120">
+    <h1>Halaman kado tidak ditemukan</h1>
+    <p>Periksa kembali tautan atau pindai ulang QR Code pada kartu ucapanmu.</p>
+  </section>
+
+  <!-- Pemutar mini saat menggulir -->
+  <button class="mini" id="mini" type="button" hidden>
+    <span class="mini__bars" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="mini__label" id="miniLabel">Jeda lagu</span>
+  </button>
+
+  <!-- Tampilan foto besar -->
+  <dialog class="viewer" id="viewer" aria-label="Foto">
+    <figure class="viewer__print">
+      <img id="viewerImg" alt="">
+      <figcaption id="viewerCap"></figcaption>
+    </figure>
+    <div class="viewer__nav">
+      <button type="button" id="prevBtn" aria-label="Foto sebelumnya"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <span id="viewerCount"></span>
+      <button type="button" id="nextBtn" aria-label="Foto berikutnya"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    </div>
+    <button class="viewer__close" type="button" id="closeBtn" aria-label="Tutup"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </dialog>
+
+  <audio id="audio" preload="metadata"></audio>
+  <canvas class="confetti" id="confetti" aria-hidden="true"></canvas>
+
+  <script src="/js/app.js" defer></script>
+</body>
+</html>

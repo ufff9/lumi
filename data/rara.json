@@ -1,0 +1,34 @@
+{
+  "penerima": "XXX",
+  "pengirim": "XXX",
+  "judul": "Selamat wisuda, XXX.",
+  "keterangan": "Sarjana Komputer, 14 Desember 2026",
+  "label": "Untuk XXX, dari XXX",
+
+  "foto": [
+    { "src": "/assets/pesanan/sani/toga.jpg", "caption": "Toga pertama, akhirnya!" },
+    { "src": "/assets/pesanan/sani/nugas.jpeg", "caption": "Malam begadang revisi bab 4" },
+    { "src": "/assets/pesanan/sani/bunga.webp", "caption": "Bunga dari anak-anak kelas" },
+    { "src": "/assets/pesanan/sani/kopi.jpg", "caption": "Kopi wajib sebelum bimbingan" }
+  ],
+
+  "lagu": {
+    "tipe": "audio",
+    "src": "/assets/pesanan/sani/lagu.mp3",
+    "judul": "Lagu Kotak Musik",
+    "artis": "Contoh lagu LUMI GIFT",
+    "catatan": "Setiap dengar lagu ini, aku ingat perjalanan kita dari semester satu."
+  },
+
+  "surat": {
+    "sapaan": "XXX,",
+    "isi": [
+      "Empat tahun lalu kita masih bingung mencari ruang kelas. Sekarang kamu sudah memakai toga. Aku bangga sekali bisa melihatmu sampai di titik ini.",
+      "Terima kasih sudah jadi teman yang selalu mengingatkan tenggat tugas, berbagi catatan, dan menemani begadang menjelang sidang. Semua lelahmu terbayar hari ini.",
+      "Semoga langkah berikutnya lebih ringan, dan semoga kita tetap sering bertemu walau sudah sibuk masing-masing."
+    ],
+    "penutup": "Peluk erat,"
+  },
+
+  "pesanRahasia": "Traktiran wisuda tetap ditagih ya. Aku pilih tempatnya, kamu yang bayar. Selamat, Sarjana Komputer!"
+}
