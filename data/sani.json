@@ -1,36 +1,36 @@
 {
-  "penerima": "Rara",
-  "pengirim": "Nadia",
+  "penerima": "XXX",
+  "pengirim": "XXX",
   "ucapan": "Selamat Wisuda",
-  "judul": "Selamat wisuda, Rara.",
+  "judul": "Selamat wisuda, XXX.",
   "keterangan": "Sarjana Komputer, 14 Desember 2026",
   "foto": [
     {
-      "src": "/assets/pesanan/rara/1.jpg",
+      "src": "/assets/pesanan/xxx/toga.jpg",
       "caption": "Toga pertama, akhirnya!"
     },
     {
-      "src": "/assets/pesanan/rara/2.jpg",
+      "src": "/assets/pesanan/xxx/nugas.jpeg",
       "caption": "Malam begadang revisi bab 4"
     },
     {
-      "src": "/assets/pesanan/rara/3.jpg",
+      "src": "/assets/pesanan/xxx/bunga.webp",
       "caption": "Bunga dari anak-anak kelas"
     },
     {
-      "src": "/assets/pesanan/rara/4.jpg",
+      "src": "/assets/pesanan/xxx/kopi.jpg",
       "caption": "Kopi wajib sebelum bimbingan"
     }
   ],
   "lagu": {
     "tipe": "audio",
-    "src": "/assets/pesanan/rara/lagu.mp3",
+    "src": "/assets/pesanan/xxx/lagu.mp3",
     "judul": "Lagu Kotak Musik",
     "artis": "Contoh lagu LUMI GIFT",
     "catatan": "Setiap dengar lagu ini, aku ingat perjalanan kita dari semester satu."
   },
   "surat": {
-    "sapaan": "Rara,",
+    "sapaan": "XXX,",
     "isi": [
       "Empat tahun lalu kita masih bingung mencari ruang kelas. Sekarang kamu sudah memakai toga. Aku bangga sekali bisa melihatmu sampai di titik ini.",
       "Terima kasih sudah jadi teman yang selalu mengingatkan tenggat tugas, berbagi catatan, dan menemani begadang menjelang sidang. Semua lelahmu terbayar hari ini.",
