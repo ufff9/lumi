@@ -1,5 +1,5 @@
 /* =========================================================
-   LUMI GIFT – logika micro-site
+   LUMI GIFT – logika micro-site (versi boho + glass)
    Data setiap pesanan ada di /data/<id>.json
    Alamat halaman: /untuk/<id>   atau   /?u=<id>
    ========================================================= */
@@ -11,7 +11,9 @@ const CONFIG = {
 };
 
 const $ = (s) => document.querySelector(s);
+const body = document.body;
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const buzz = (ms) => { if (!reduceMotion && navigator.vibrate) navigator.vibrate(ms); };
 
 /* ---------- 1. Ambil id pesanan dari alamat ---------- */
 function getId() {
@@ -28,17 +30,34 @@ async function loadData(id) {
 }
 
 function showMissing() {
-  $("#lid").hidden = true;
+  body.classList.remove("is-intro", "is-loading");
+  body.classList.add("is-open");
+  $("#intro").hidden = true;
   $("#missing").hidden = false;
-  document.body.classList.remove("is-closed");
 }
 
 /* ---------- 2. Isi halaman ---------- */
+// "ucapan" di JSON, misal "Selamat Wisuda". Bila kosong, diambil dari "judul".
+function getGreeting(d) {
+  if (d.ucapan) return d.ucapan;
+  if (d.judul && d.penerima) {
+    const esc = d.penerima.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const g = d.judul.replace(new RegExp(`[,\\s]*${esc}[.!\\s]*$`, "i"), "").trim();
+    if (g) return g;
+  }
+  return "Ada kado untukmu";
+}
+
 function fill(d) {
+  const greet = getGreeting(d);
   document.title = `Untuk ${d.penerima} – LUMI GIFT`;
-  $("#tagTo").textContent = `Untuk ${d.penerima}`;
-  $("#tagFrom").textContent = d.pengirim ? `dari ${d.pengirim}` : "";
-  $("#title").textContent = d.judul || `Untuk ${d.penerima}`;
+
+  $("#introGreet").textContent = greet;
+  $("#introName").textContent = d.penerima || "";
+  $("#introFrom").textContent = d.pengirim ? `dari ${d.pengirim}` : "";
+
+  $("#greet").textContent = greet;
+  $("#name").textContent = d.penerima || "";
   $("#meta").textContent = d.keterangan || "";
 
   renderPhotos(d.foto || []);
@@ -46,7 +65,7 @@ function fill(d) {
   renderLetter(d.surat, d.pengirim);
 
   if (d.pesanRahasia) $("#secretText").textContent = d.pesanRahasia;
-  else $(".part--secret").hidden = true;
+  else $(".panel--secret").hidden = true;
 
   if (CONFIG.whatsapp) {
     const a = $("#orderLink");
@@ -60,18 +79,20 @@ let photos = [];
 function renderPhotos(list) {
   photos = list;
   const wrap = $("#prints");
-  if (!list.length) { $(".part--photos").hidden = true; return; }
+  if (!list.length) { $(".panel--photos").hidden = true; return; }
   const n = list.length;
   wrap.className = "prints " + (n <= 4 ? `prints--${n}` : "prints--n");
+  const dots = $("#dots");
+
   list.forEach((f, i) => {
     const b = document.createElement("button");
     b.type = "button";
-    b.className = "print";
-    const spans = (n === 3 && i === 0) || (n === 4 && i === 0) || (n > 4 && i === 0);
-    if (spans) b.classList.add("print--span");
+    b.className = "print" + (i === 0 ? " is-active" : "");
+    if ((n === 3 || n === 4 || n > 4) && i === 0) b.classList.add("print--span");
+    b.setAttribute("aria-label", `Lihat foto ${i + 1}${f.caption ? ": " + f.caption : ""}`);
+
     const frame = document.createElement("span");
     frame.className = "print__frame";
-    b.setAttribute("aria-label", `Lihat foto ${i + 1}${f.caption ? ": " + f.caption : ""}`);
     const img = new Image();
     img.src = f.src;
     img.alt = f.caption || `Foto ${i + 1}`;
@@ -80,6 +101,7 @@ function renderPhotos(list) {
     if (f.posisi) img.style.objectPosition = f.posisi; // contoh: "center top"
     frame.append(img);
     b.append(frame);
+
     if (f.caption) {
       const s = document.createElement("span");
       s.className = "print__cap";
@@ -88,7 +110,31 @@ function renderPhotos(list) {
     }
     b.addEventListener("click", () => openViewer(i));
     wrap.append(b);
+
+    if (n > 1) {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.tabIndex = -1;
+      if (i === 0) dot.className = "is-active";
+      dot.addEventListener("click", () => b.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" }));
+      dots.append(dot);
+    }
   });
+
+  $("#photoCount").textContent = n > 1 ? `1 / ${n}` : "";
+
+  // tandai foto yang sedang di tengah (carousel HP)
+  const slides = [...wrap.children];
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e) => {
+      if (e.intersectionRatio < 0.6) return;
+      const idx = slides.indexOf(e.target);
+      slides.forEach((s, k) => s.classList.toggle("is-active", k === idx));
+      [...dots.children].forEach((d, k) => d.classList.toggle("is-active", k === idx));
+      $("#photoCount").textContent = `${idx + 1} / ${n}`;
+    });
+  }, { root: wrap, threshold: [0.6] });
+  slides.forEach((s) => io.observe(s));
 }
 
 const viewer = $("#viewer");
@@ -122,7 +168,7 @@ viewer.addEventListener("touchend", (e) => {
 
 /* ---------- Lagu ---------- */
 const audio = $("#audio");
-const slip = $("#slip");
+const songPanel = $("#songPanel");
 let songType = null;
 
 function embedUrl(lagu) {
@@ -139,21 +185,20 @@ function embedUrl(lagu) {
 }
 
 function renderSong(lagu) {
-  if (!lagu || !lagu.src) { $(".part--song").hidden = true; return; }
+  if (!lagu || !lagu.src) { songPanel.hidden = true; return; }
   songType = lagu.tipe || "audio";
   $("#songTitle").textContent = lagu.judul || "Lagu kenangan";
   $("#songArtist").textContent = lagu.artis || "";
   $("#songNote").textContent = lagu.catatan || "";
 
-  if (songType === "audio") {
-    audio.src = lagu.src;
-    return;
-  }
+  if (songType === "audio") { audio.src = lagu.src; return; }
+
   // Spotify / YouTube: pakai pemutar resmi
   const url = embedUrl(lagu);
   $("#player").hidden = true;
   const box = $("#embed");
-  if (!url) { box.hidden = false; box.textContent = "Tautan lagu belum benar. Periksa kembali link Spotify/YouTube di data pesanan."; return; }
+  box.hidden = false;
+  if (!url) { box.textContent = "Tautan lagu belum benar. Periksa kembali link Spotify/YouTube di data pesanan."; return; }
   const ifr = document.createElement("iframe");
   ifr.src = url;
   ifr.loading = "lazy";
@@ -162,13 +207,12 @@ function renderSong(lagu) {
   if (songType === "spotify") ifr.height = 152;
   box.className = "embed" + (songType === "youtube" ? " embed--yt" : "");
   box.append(ifr);
-  box.hidden = false;
 }
 
 const fmt = (s) => (isFinite(s) ? `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}` : "0:00");
 const seek = $("#seek");
 function setPlaying(on) {
-  slip.classList.toggle("is-playing", on);
+  songPanel.classList.toggle("is-playing", on);
   $("#playBtn").setAttribute("aria-label", on ? "Jeda lagu" : "Putar lagu");
   $("#mini").classList.toggle("is-paused", !on);
   $("#miniLabel").textContent = on ? "Jeda lagu" : "Putar lagu";
@@ -192,20 +236,20 @@ const toggleAudio = () => (audio.paused ? audio.play().catch(() => {}) : audio.p
 $("#playBtn").addEventListener("click", toggleAudio);
 $("#mini").addEventListener("click", toggleAudio);
 
-// tampilkan pemutar mini saat slip lagu tidak terlihat dan lagu pernah diputar
+// pemutar mini muncul saat panel lagu tidak terlihat
 let started = false;
 audio.addEventListener("play", () => { started = true; });
 new IntersectionObserver(([e]) => {
   $("#mini").hidden = !(songType === "audio" && started && !e.isIntersecting);
-}, { threshold: 0 }).observe(slip);
+}, { threshold: 0 }).observe(songPanel);
 
 /* ---------- Surat ---------- */
 function renderLetter(s, pengirim) {
-  if (!s || !s.isi || !s.isi.length) { $(".part--letter").hidden = true; return; }
+  if (!s || !s.isi || !s.isi.length) { $(".panel--letter").hidden = true; return; }
   const el = $("#letter");
-  const add = (text, cls) => { const p = document.createElement("p"); p.textContent = text; if (cls) p.className = cls; el.append(p); };
+  const add = (text) => { const p = document.createElement("p"); p.textContent = text; el.append(p); };
   if (s.sapaan) add(s.sapaan);
-  s.isi.forEach((t) => add(t));
+  s.isi.forEach(add);
   const end = document.createElement("p");
   end.textContent = s.penutup || "";
   if (pengirim) {
@@ -218,29 +262,70 @@ function renderLetter(s, pengirim) {
   el.append(end);
 }
 
-/* ---------- 3. Membuka kotak ---------- */
+/* ---------- 3. Paralaks: hiasan ikut gerak HP / kursor / gulir ---------- */
+const scene = $("#scene");
+let tx = 0, ty = 0, cx = 0, cy = 0, rafOn = false;
+function loop() {
+  cx += (tx - cx) * 0.08;
+  cy += (ty - cy) * 0.08;
+  scene.style.setProperty("--px", cx.toFixed(2));
+  scene.style.setProperty("--py", cy.toFixed(2));
+  if (Math.abs(tx - cx) > 0.05 || Math.abs(ty - cy) > 0.05) requestAnimationFrame(loop);
+  else rafOn = false;
+}
+function aim(x, y) {
+  tx = Math.max(-1, Math.min(1, x)) * 10;
+  ty = Math.max(-1, Math.min(1, y)) * 10;
+  if (!rafOn) { rafOn = true; requestAnimationFrame(loop); }
+}
+if (!reduceMotion) {
+  window.addEventListener("pointermove", (e) => {
+    if (e.pointerType !== "mouse") return;
+    aim(e.clientX / innerWidth * 2 - 1, e.clientY / innerHeight * 2 - 1);
+  });
+  window.addEventListener("scroll", () => {
+    scene.style.setProperty("--sy", (scrollY * 0.04).toFixed(1));
+  }, { passive: true });
+}
+function onTilt(e) {
+  if (e.gamma == null) return;
+  aim(e.gamma / 25, (e.beta - 45) / 25);
+}
+async function enableTilt() {
+  if (reduceMotion || !("DeviceOrientationEvent" in window)) return;
+  try {
+    // iPhone meminta izin; harus dipanggil dari ketukan pengguna
+    if (typeof DeviceOrientationEvent.requestPermission === "function") {
+      if ((await DeviceOrientationEvent.requestPermission()) !== "granted") return;
+    }
+    window.addEventListener("deviceorientation", onTilt);
+  } catch (_) { /* abaikan */ }
+}
+
+/* ---------- 4. Membuka kado ---------- */
 function openBox() {
-  const body = document.body;
-  if (songType === "audio") audio.play().catch(() => {}); // klik pengguna = lagu boleh diputar
-  $("#box").hidden = false;
-  window.scrollTo(0, 0);
-  body.classList.add("is-opening");
-  const done = () => {
-    $("#lid").hidden = true;
-    body.classList.remove("is-closed", "is-opening");
-    $("#title").setAttribute("tabindex", "-1");
-    $("#title").focus({ preventScroll: true });
+  if (songType === "audio") audio.play().catch(() => {}); // ketukan pengguna = lagu boleh diputar
+  enableTilt();
+  buzz(18);
+  body.classList.add("is-opening", "is-open");
+  const show = () => {
+    $("#page").hidden = false;
+    $("#intro").hidden = true;
+    body.classList.remove("is-intro", "is-opening");
+    window.scrollTo(0, 0);
+    $("#name").focus({ preventScroll: true });
   };
-  reduceMotion ? done() : setTimeout(done, 1600);
+  reduceMotion ? show() : setTimeout(show, 650);
 }
 $("#openBtn").addEventListener("click", openBox);
 
-/* ---------- 4. Amplop & konfeti ---------- */
+/* ---------- 5. Amplop & konfeti ---------- */
 const env = $("#envelope");
 $("#sealBtn").addEventListener("click", () => {
   env.style.setProperty("--envH", env.offsetHeight + "px");
   env.classList.add("is-open");
   $("#sealHint").hidden = true;
+  buzz([12, 40, 18]);
   $("#secretCard").setAttribute("tabindex", "-1");
   setTimeout(() => $("#secretCard").focus({ preventScroll: true }), 900);
   const r = $("#sealBtn").getBoundingClientRect();
@@ -254,28 +339,47 @@ function confetti(x, y) {
   const dpr = window.devicePixelRatio || 1;
   c.width = innerWidth * dpr; c.height = innerHeight * dpr;
   ctx.scale(dpr, dpr);
-  const colors = ["#C0704F", "#D88E6D", "#EED6C0", "#FBF7F0", "#964F33", "#E7C7AB"];
-  const bits = Array.from({ length: 90 }, () => {
-    const a = Math.random() * Math.PI * 2, v = 4 + Math.random() * 7;
-    return { x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 6, w: 6 + Math.random() * 6, h: 3 + Math.random() * 4,
-      r: Math.random() * 6, vr: (Math.random() - .5) * .4, c: colors[(Math.random() * colors.length) | 0] };
+  const colors = ["#E2A84B", "#C8754E", "#7E9B95", "#E8B4A4", "#EBB592", "#FFF6E6"];
+  const bits = Array.from({ length: 80 }, () => {
+    const a = Math.random() * Math.PI * 2, v = 3 + Math.random() * 7;
+    return { x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 6, s: 4 + Math.random() * 6,
+      r: Math.random() * 6, vr: (Math.random() - .5) * .3, c: colors[(Math.random() * colors.length) | 0], star: Math.random() < .25 };
   });
   const t0 = performance.now();
   (function frame(t) {
     const life = (t - t0) / 1800;
     ctx.clearRect(0, 0, innerWidth, innerHeight);
     bits.forEach((b) => {
-      b.vy += .28; b.vx *= .985; b.x += b.vx; b.y += b.vy; b.r += b.vr;
-      ctx.save(); ctx.globalAlpha = Math.max(0, 1 - life); ctx.translate(b.x, b.y); ctx.rotate(b.r);
-      ctx.fillStyle = b.c; ctx.fillRect(-b.w / 2, -b.h / 2, b.w, b.h * Math.abs(Math.cos(b.r * 2))); ctx.restore();
+      b.vy += .26; b.vx *= .985; b.x += b.vx; b.y += b.vy; b.r += b.vr;
+      ctx.save(); ctx.globalAlpha = Math.max(0, 1 - life); ctx.translate(b.x, b.y); ctx.rotate(b.r); ctx.fillStyle = b.c;
+      if (b.star) { // bintang kecil seperti hiasan latar
+        const s = b.s;
+        ctx.beginPath(); ctx.moveTo(0, -s); ctx.quadraticCurveTo(0, 0, s, 0); ctx.quadraticCurveTo(0, 0, 0, s);
+        ctx.quadraticCurveTo(0, 0, -s, 0); ctx.quadraticCurveTo(0, 0, 0, -s); ctx.fill();
+      } else ctx.fillRect(-b.s / 2, -b.s / 4, b.s, b.s / 2 * Math.abs(Math.cos(b.r * 2)) + 1);
+      ctx.restore();
     });
     if (life < 1) requestAnimationFrame(frame); else ctx.clearRect(0, 0, innerWidth, innerHeight);
   })(t0);
 }
 
+/* ---------- 6. Efek riak saat tombol disentuh ---------- */
+document.addEventListener("pointerdown", (e) => {
+  const el = e.target.closest(".btn, .player__btn, .seal");
+  if (!el || reduceMotion) return;
+  const r = el.getBoundingClientRect();
+  const size = Math.max(r.width, r.height);
+  const s = document.createElement("span");
+  s.className = "ripple";
+  s.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - r.left - size / 2}px;top:${e.clientY - r.top - size / 2}px`;
+  el.append(s);
+  s.addEventListener("animationend", () => s.remove());
+});
+
 /* ---------- Mulai ---------- */
 (async function init() {
   const id = getId();
+  requestAnimationFrame(() => requestAnimationFrame(() => body.classList.remove("is-loading")));
   if (!id) return showMissing();
   try {
     fill(await loadData(id));
